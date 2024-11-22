@@ -114,7 +114,7 @@ def show_level_select_page():
     for button in level_buttons:
         button.draw(screen)
 
-froggy_start_pos = (FrameWidth // 2 - froggy.get_width() // 2, LEVEL_HEIGHT)
+froggy_start_pos = (FrameWidth // 2 - froggyImage.get_width() // 2, LEVEL_HEIGHT)
 froggy_pos = list(froggy_start_pos)
 water_lily_positions = [
     (218, LEVEL_HEIGHT - 203),
@@ -138,119 +138,65 @@ water_lily_positions = [
 def move_froggy(keys):
     global froggy_pos
     step = 156  # Distância padrão do pulo
-    direction = None
 
     # Detectar direção do movimento
     if keys[py.K_UP]:
-        direction = "UP"
+        froggy_pos[1] -= step
     elif keys[py.K_DOWN]:
-        direction = "DOWN"
+        froggy_pos[1] += step
     elif keys[py.K_LEFT]:
-        direction = "LEFT"
+        froggy_pos[0] -= step
     elif keys[py.K_RIGHT]:
-        direction = "RIGHT"
-
-    # Encontrar a próxima vitória-régia na direção do salto
-    next_lily = None
-    min_distance = float('inf')
-
-    for pos in water_lily_positions:
-        if direction == "UP" and pos[1] < froggy_pos[1]:
-            distance = froggy_pos[1] - pos[1]
-            if distance < min_distance:
-                next_lily = pos
-                min_distance = distance
-        elif direction == "DOWN" and pos[1] > froggy_pos[1]:
-            distance = pos[1] - froggy_pos[1]
-            if distance < min_distance:
-                next_lily = pos
-                min_distance = distance
-        elif direction == "LEFT" and pos[0] < froggy_pos[0]:
-            distance = froggy_pos[0] - pos[0]
-            if distance < min_distance:
-                next_lily = pos
-                min_distance = distance
-        elif direction == "RIGHT" and pos[0] > froggy_pos[0]:
-            distance = pos[0] - froggy_pos[0]
-            if distance < min_distance:
-                next_lily = pos
-                min_distance = distance
-
-    # Mover o sapo para a próxima vitória-régia
-    if next_lily:
-        froggy_pos[0], froggy_pos[1] = next_lily
-
-    step = 156  # Distância do pulo
-    if keys[py.K_UP] and keys[py.K_RIGHT]:  # Diagonal cima-direita
         froggy_pos[0] += step
-        froggy_pos[1] -= step
-    elif keys[py.K_UP] and keys[py.K_LEFT]:  # Diagonal cima-esquerda
-        froggy_pos[0] -= step
-        froggy_pos[1] -= step
-    elif keys[py.K_DOWN] and keys[py.K_RIGHT]:  # Diagonal baixo-direita
-        froggy_pos[0] += step
-        froggy_pos[1] += step
-    elif keys[py.K_DOWN] and keys[py.K_LEFT]:  # Diagonal baixo-esquerda
-        froggy_pos[0] -= step
-        froggy_pos[1] += step
-    elif keys[py.K_UP]:  # Para cima
-        froggy_pos[1] -= step
-    elif keys[py.K_DOWN]:  # Para baixo
-        froggy_pos[1] += step
-    elif keys[py.K_RIGHT]:  # Para direita
-        froggy_pos[0] += step
-    elif keys[py.K_LEFT]:  # Para esquerda
-        froggy_pos[0] -= step
-    
-     # Limitar o movimento do sapo dentro do nível
-    froggy_pos[0] = max(0, min(froggy_pos[0], FrameWidth - froggy.get_width()))
-    froggy_pos[1] = max(0, min(froggy_pos[1], LEVEL_HEIGHT - froggy.get_height()))
 
-# Função para verificar colisão do sapo com as vitórias-régias
-def check_collision(froggy_pos, lily_positions, scroll_y):
-    froggy_rect = py.Rect(froggy_pos[0], froggy_pos[1] - scroll_y, froggy.get_width(), froggy.get_height())
-    for pos in lily_positions:
-        lily_rect = py.Rect(pos[0], pos[1] - scroll_y, waterLily.get_width(), waterLily.get_height())
-        if froggy_rect.colliderect(lily_rect):
-            return True
-    return False
+    # Limitar o movimento do sapo dentro do nível
+    froggy_pos[0] = max(0, min(froggy_pos[0], FrameWidth - froggyImage.get_width()))
+    froggy_pos[1] = max(0, min(froggy_pos[1], LEVEL_HEIGHT - froggyImage.get_height()))
 
-lives = 3
+# Inicialização de variáveis globais necessárias
+lives = 3  # Número inicial de vidas do jogador
+froggy_pos = [FrameWidth // 2, LEVEL_HEIGHT - 100]  # Posição inicial do sapo
+froggy_start_pos = froggy_pos.copy()
 
+# Função corrigida
 def start_level_one():
-    # Lista de posições das vitórias-régias
-
     global froggy_pos, scroll_y, lives, game_state
-    # Limitar o movimento da câmera
+
+    # Limitar o movimento da câmera para manter o sapo visível
     scroll_y = max(0, min(scroll_y, LEVEL_HEIGHT - FrameHeight))
 
     # Desenhar o fundo (ajustado com a rolagem)
-    screen.blit(background_image, (0, 0))
-    
+    screen.blit(background_image, (0, -scroll_y))
+
+    # Desenhar as vitórias-régias
     for pos in water_lily_positions:
-        screen.blit(waterLily, (pos[0], pos[1]))
-        
-    screen.blit(froggy, (froggy_pos[0], froggy_pos[1]))
-    
+        screen.blit(waterLily, (pos[0], pos[1] - scroll_y))
+
+    # Desenhar o sapo
+    screen.blit(froggyImage, (froggy_pos[0], froggy_pos[1] - scroll_y))
+
     # Desenhar as vidas
     font = py.font.SysFont(None, 36)
     lives_text = font.render(f"Vidas: {lives}", True, (255, 255, 255))
     screen.blit(lives_text, (10, 10))
 
+    # Lógica adicional para verificar colisões e condições de vitória
+    # (Essa parte foi comentada no trecho original)
+
     
     # Verificar se o sapo caiu na água
-    # if not check_collision(froggy_pos, water_lily_positions, scroll_y):
-    #     lives -= 1
-    #     froggy_pos = list(froggy_start_pos)  # Reiniciar posição
-    #     scroll_y = 0  # Reiniciar câmera
-    #     if lives <= 0:
-    #         print("Game Over!")
-    #         game_state = "menu"  # Retornar ao menu inicial
+    #if not check_collision(froggy_pos, water_lily_positions, scroll_y):
+    #    lives -= 1
+    #    froggy_pos = list(froggy_start_pos)  # Reiniciar posição
+    #    scroll_y = 0  # Reiniciar câmera
+    #    if lives <= 0:
+    #        print("Game Over!")
+    #        game_state = "menu"  # Retornar ao menu inicial
 
     # Verificar se o sapo alcançou o topo do nível (objetivo)
-    # if froggy_pos[1] <= 156:
-    #     print("Você venceu o nível 1!")
-    #     game_state = "menu"  # Retornar ao menu ou carregar próximo nível
+    #if froggy_pos[1] <= 156:
+    #    print("Você venceu o nível 1!")
+    #    game_state = "menu"  # Retornar ao menu ou carregar próximo nível
 
     
 
